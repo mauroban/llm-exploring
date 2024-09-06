@@ -11,10 +11,19 @@ class LLMManager:
         self.tokenizer = None
         self.model = None
 
-    def load_model(self):
+    def load_model(self, fine_tuned_path: Optional[str] = None):
         print(f"Loading model {self.model_name}...")
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
-        self.model = AutoModelForCausalLM.from_pretrained(self.model_name)
+        if fine_tuned_path:
+            self.tokenizer = AutoTokenizer.from_pretrained(fine_tuned_path)
+            self.model = AutoModelForCausalLM.from_pretrained(fine_tuned_path)
+        else:
+            self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+            self.model = AutoModelForCausalLM.from_pretrained(self.model_name)
+        
+        # Set padding token to be the same as the EOS token
+        self.tokenizer.pad_token = self.tokenizer.eos_token
+        self.model.config.pad_token_id = self.model.config.eos_token_id
+        
         self.model.to(self.device)
         print(f"Model loaded and moved to {self.device}")
 
